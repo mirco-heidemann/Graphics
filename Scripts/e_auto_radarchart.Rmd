@@ -1,0 +1,111 @@
+---
+title: "Elektro- vs Verbrennungsmotor Fahrzeuge GVZ"
+subtitle: "Radar (Spider) Chart"
+output:
+  pdf_document: default
+---
+
+Radar chart mit der fsmb library:
+https://www.r-graph-gallery.com/142-basic-radar-chart.html
+
+```{r setup, message = FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
+library(fmsb)
+
+## turn off scientific notation
+options(scipen=999)
+```
+
+Exemple for radar chart:
+```{r}
+# Create data: note in High school for Jonathan:
+data <- as.data.frame(matrix(sample(0:20 , 10 , replace=T) , ncol=10))
+colnames(data) <- c("math" , "english" , "biology" , "music" , "R-coding", "data-viz" , "french" , "physic", "statistic", "sport" )
+ 
+# To use the fmsb package, I have to add 2 lines to the dataframe: the max and min of each topic to show on the plot!
+data <- rbind(rep(20,10) , rep(0,10) , data)
+ 
+# Check your data, it has to look like this!
+# head(data)
+
+# Custom the radarChart !
+radarchart(data, axistype=1, 
+    #custom polygon
+    pcol=rgb(0.2,0.5,0.5,0.9), pfcol=rgb(0.2,0.5,0.5,0.5), plwd=4 , 
+    #custom the grid
+    cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+    #custom labels
+    vlcex=0.8 
+    )
+```
+
+### Vergleich von Herkömmlichen Autos mit Verbrennungsmotor und Elektrofahrzeugen
+Folgende Kategorien oder Dimensionen werden miteinander verglichen:
+*Direkte Emissionen*: Emissionen während des Betriebs aus dem Auspuff, Treibhausgase und Luftschadstoffe wie Feinstaub (NOx) und Sommersmog Partikel (VOC).
+*Treibstoff*: Bereitstellung der Energieträger, die für den Betrieb der Autos benötigt werden. Benzin, Diesel, Gas, Wasserstoff und Strom.
+*Energiespeicher*: Herstellung, Wartung und Entsorgung von Motor, Getriebe, Ladeelektronik, Treibstofftanks und Batterie.
+*Reputation*: Null-Emissionen Image
+*Unterhaltskosten*: Wartung, Unterhalt, Service
+*Anschaffungskosten*: Fahrzeug und Infrastruktur
+*Komfort*: Tanken unterwegs, Reichweite, Fahrgefühl, Lärm
+*Technologie*: Potential für technologischen Fortschritt, Energieeffizienz und Wirkungsgrad (Tank-zu-Rad)
+*Politik*: Vorteil durch das Verkehrspolitische Umfeld und die langfristige Verkehrsstrategie
+
+Qualitative Einordnung und Vergleich der verschiedenen Dimensionen für Verbrennungsmotoren (Benzin und Diesel) sowie für Elektrofahrzeuge zwischen o und 1.
+
+Kategorie          | Verbrennungsmotor | Elektrofahrzeug
+------------------ | ------------------| ----------------
+Direkte Emissionen | 1.0               | 0.1
+Treibstoff         | 0.5               | 0.25
+Energiespeicher    | 0.1               | 0.75
+Technologie        | 0.2               | 0.8
+Komfort            | 0.5               | 0.5
+Unterhaltskosten   | 0.5               | 0.25
+Anschaffungskosten | 0.75              | 1
+Politik            | 0.2               | 0.5
+Reputation         | 0.0               | 0.75
+
+
+```{r}
+dd<-data.frame(
+    typ = c("ICEV", "BEV"),
+    Energiespeicher = c(0.1, 0.75),
+    Reputation = c(0, 0.75),
+    Politik = c(0.2, 0.5),
+    Technologie = c(0.5, 0.8),
+    Komfort = c(0.5, 0.5),
+    Anschaffungskosten = c(0.75, 1),
+    Unterhaltskosten = c(0.5, 0.25),
+    Treibstoff = c(0.5, 0.25),
+    Emissionen = c(1, 0.1)
+    )
+```
+
+Plot and save PNG of the radarchart
+```{r}
+par(mar=c(0, 0, 0, 0)) #decrease default margin
+layout(matrix(1:2, ncol=2)) #draw 2 plots to device
+
+char_labels <- c('Energiespeicher', 'Reputation', 'Politik', 'Technologie', 'Komfort', 'Anschaffungskosten',
+                 'Unterhaltskosten', 'Treibstoff', 'Direkte\nEmissionen')
+
+#loop over rows to draw them, add 1 as max and 0 as min for each var
+rad_plot <- lapply(1:2, function(i) {
+  png(paste0("radarPlot_eAutos_", i, ".png"), width = 250, height = 200, units='mm', res = 600)
+  radarchart(rbind(rep(1, 9), rep(0, 9), dd[i,-1]),
+             axistype = 6,
+             # custom polygon
+             pcol = rgb(0.2, 0.5, 0.5, 0.9), pfcol = rgb(0.2, 0.5, 0.5, 0.5), plwd = 4 , 
+             # custom the grid
+             cglcol = "grey", cglty = 1, axislabcol = "grey", caxislabels = seq(0, 1, 5), cglwd = 0.8,
+             # custom labels
+             vlcex = 1.5,
+             # custom labe names
+             vlabels = c(char_labels))
+  dev.off()
+  })
+```
+
+
